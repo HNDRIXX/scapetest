@@ -7,22 +7,40 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Fetch all users
-app.get('/users', (req, res) => {
-    db.query('SELECT * FROM users', (err, results) => {
-        if (err) return res.status(500).send(err);
+// Get all users
+app.get("/users", (req, res) => {
+    db.query("SELECT * FROM users", (err, results) => {
+        if (err) return res.status(500).json(err);
         res.json(results);
     });
 });
 
-// Add a new user
-app.post('/users', (req, res) => {
+// Create a new user
+app.post("/users", (req, res) => {
     const { name, email } = req.body;
-    db.query('INSERT INTO users (name, email) VALUES (?, ?)', [name, email], (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json({ message: 'User added successfully!', id: result.insertId });
+    db.query("INSERT INTO users (name, email) VALUES (?, ?)", [name, email], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ id: result.insertId, name, email });
     });
 });
+
+// Update user
+app.put("/users/:id", (req, res) => {
+    const { name, email } = req.body;
+    db.query("UPDATE users SET name = ?, email = ? WHERE id = ?", [name, email, req.params.id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: "User updated successfully" });
+    });
+});
+
+// Delete user
+app.delete("/users/:id", (req, res) => {
+    db.query("DELETE FROM users WHERE id = ?", [req.params.id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({ message: "User deleted successfully" });
+    });
+});
+
 
 // Start server
 app.listen(5000, () => {
